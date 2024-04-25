@@ -4,13 +4,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class CheckersServer2 {
+public class Checker {
     public static String type_BLANK = "BLANK";
     public static String type_RED = "RED";
     public static String type_BLACK = "BLACK";
 
     public static int width = 100;
     public static int height = 100;
+    public static boolean isServer = true;
 
     public static class Board {
         private JFrame frame = new JFrame();
@@ -18,7 +19,7 @@ public class CheckersServer2 {
         private BoardSquare[][] boardSquares = new BoardSquare[8][8];
         private BoardSquare selectedSquare = null;
 
-        Board() {
+        Board(boolean player) {
             int numRows = 8;
             int numCols = 8;
 
@@ -53,18 +54,20 @@ public class CheckersServer2 {
             }
 
             frame.add(backBoard);
-
-            // Add mouse listener to handle piece movement
-            backBoard.addMouseListener(new MouseAdapter() {
+            if(!isServer)
+            {
+                // Add mouse listener to handle piece movement
+                backBoard.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     super.mouseClicked(e);
                     int x = e.getX() / width;
                     int y = e.getY() / height;
                     BoardSquare clickedSquare = boardSquares[y][x];
+                    System.out.println(e);
                     if (selectedSquare == null) {
                         // No piece selected yet, check if the clicked square has a piece
-                        if (clickedSquare.hasPiece()) {
+                        if (clickedSquare.hasPiece() && clickedSquare.getPiece().getColor() == Color.BLACK) {
                             selectedSquare = clickedSquare;
                             selectedSquare.setBorder(new LineBorder(Color.YELLOW, 3));
                         }
@@ -81,7 +84,43 @@ public class CheckersServer2 {
                         }
                     }
                 }
-            });
+                });
+            }
+            else
+            {
+                int x = 0;
+                int y = 0;
+                BoardSquare square = boardSquares[x][y];
+                BoardSquare selectedSquare = boardSquares[x][y];
+                
+                while(square.getPiece().getColor() != Color.RED)
+                {
+                    x = (int)Math.floor(Math.random() * 600) + 1;
+                    y = (int)Math.floor(Math.random() * 600) + 1;
+                    
+                    square = boardSquares[x][y];
+                }
+                
+                while(selectedSquare.hasPiece() == true)
+                {
+                    x = (int)Math.floor(Math.random() * 600) + 1;
+                    y = (int)Math.floor(Math.random() * 600) + 1;
+                    
+                    selectedSquare = boardSquares[x][y];
+                }
+                
+                // Move the selected piece to the clicked square if it's a valid move
+                if (isValidMove(selectedSquare, square)) {
+                    movePiece(selectedSquare, square);
+                    selectedSquare.setBorder(null);
+                    selectedSquare = null;
+                } else {
+                    // Invalid move, reset selection
+                    selectedSquare.setBorder(null);
+                    selectedSquare = null;
+                }
+
+            }
         }
 
         private boolean isValidMove(BoardSquare from, BoardSquare to) {
@@ -120,7 +159,7 @@ public class CheckersServer2 {
             Graphics2D g2 = (Graphics2D) g;
             Rectangle box = new Rectangle(0, 0, width, height);
             g2.draw(box);
-            g2.setPaint(Color.BLUE);
+            g2.setPaint(Color.WHITE);
             g2.fill(box);
             if (piece != null) {
                 g2.setColor(piece.getColor());
@@ -151,6 +190,7 @@ public class CheckersServer2 {
         public void removePiece() {
             this.piece = null;
         }
+        
     }
 
     private static class Piece {
@@ -170,6 +210,6 @@ public class CheckersServer2 {
     }
 
     public static void main(String[] args) {
-        Board game = new Board();
-    }   
+        Board game = new Board(false);
+    }
 }

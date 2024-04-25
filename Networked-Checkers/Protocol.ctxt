@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=Protocol
+comment1.params=theInput
+comment1.target=java.lang.String\ processInput(java.lang.String)
+numComments=2
