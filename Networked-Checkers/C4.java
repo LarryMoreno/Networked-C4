@@ -105,7 +105,7 @@ public void run() {
 
     private void dropPiece(int column) {
         for (int row = 5; row >= 0; row--) {
-            if (board[row][column] == '\0') {
+            if (board[row][column] == ' ') {
                 board[row][column] = currentPlayer;
                 break;
             }
@@ -165,13 +165,14 @@ public void run() {
     private boolean checkForDraw() {
         for (int row = 0; row < 6; row++) {
             for (int col = 0; col < 7; col++) {
-                if (board[row][col] == '\0') {
+                if (board[row][col] == ' ') {
                     return false;
                 }
             }
         }
         return true;
     }
+    
 private boolean isValidMove(int column) {
     // Check if the column is within bounds
     if (column < 0 || column >= 7) {
@@ -179,7 +180,7 @@ private boolean isValidMove(int column) {
     }
     
     // Check if the top row of the column is empty
-    return board[0][column] == '\0';
+    return board[0][column] == ' ';
 }
 
 private void sendBoardState() {
