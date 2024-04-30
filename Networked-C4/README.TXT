@@ -1,12 +1,10 @@
-------------------------------------------------------------------------
-This is the project README file. Here, you should describe your project.
-Tell the reader (someone who does not know anything about this project)
-all they need to know. The comments should usually include at least:
-------------------------------------------------------------------------
+--------------------
+How to run
+--------------------
 
-PROJECT TITLE:
-PURPOSE OF PROJECT:
-VERSION or DATE:
-HOW TO START THIS PROJECT:
-AUTHORS:
-USER INSTRUCTIONS:
+To run the program, you have to have three instances of this program.
+One will run the 'Connect4Server'file which will launch the server.
+The other two instances will run the 'Connect4Client' file and the game will begin.
+
+**There is no need to add any agruments for connecting. 
+
