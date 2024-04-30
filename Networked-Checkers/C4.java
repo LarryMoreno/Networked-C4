@@ -55,7 +55,7 @@ public void run() {
     try {
         player1Out.println("START R");
         player2Out.println("START B");
-
+        
         // Send the initial board state to both players
         sendBoardState();
 
@@ -82,7 +82,7 @@ public void run() {
                 sendBoardState();
                 break;
             }
-
+            
             // Switch players
             currentPlayer = (currentPlayer == 'R') ? 'B' : 'R';
         }
@@ -185,8 +185,8 @@ private boolean isValidMove(int column) {
 private void sendBoardState() {
     // Concatenate the board into a single string
     StringBuilder boardString = new StringBuilder();
-    boardString.append("  0   1   2   3   4   5   6 \n");
-    boardString.append(" ___________________________\n");
+    boardString.append("| 0   1   2   3   4   5   6  \n");
+    boardString.append("|____________________________\n");
     for (int row = 0; row < 6; row++) {
         boardString.append("|");
         for (int col = 0; col < 7; col++) {

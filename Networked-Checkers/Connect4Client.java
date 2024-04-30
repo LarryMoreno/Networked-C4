@@ -11,7 +11,8 @@ public class Connect4Client {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
-
+            
+            int count = 0;
             String response;
             while ((response = in.readLine()) != null) {
                 System.out.println(response);
@@ -24,9 +25,18 @@ public class Connect4Client {
                     // Skip printing intermediate board states
                     continue;
                 }
-
-                String userInput = consoleInput.readLine();
-                out.println(userInput);
+            
+                if(count > 0)
+                {
+                    if(response.equals("YOUR_TURN"))
+                    {
+                       String userInput = consoleInput.readLine();
+                       out.println(userInput);
+                       response = userInput;
+                    }                
+                
+                    count++;
+                }
             }
 
             socket.close();
