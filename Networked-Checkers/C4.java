@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class C4 extends Thread {
     private Socket player1Socket;
@@ -37,25 +39,28 @@ public class C4 extends Thread {
         e.printStackTrace();
     }
 }
-private void handleMove(Scanner in, PrintWriter out) {
-    int column = in.nextInt();
+private void handleMove(Socket socket, PrintWriter out) {
+    try {
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        int column = Integer.parseInt(in.readLine());
 
-    if (isValidMove(column)) {
-        dropPiece(column);
-        out.println("VALID_MOVE");
-        sendBoardState(); // Send the updated board state after a valid move
-    } else {
-        out.println("INVALID_MOVE");
+        if (isValidMove(column)) {
+            dropPiece(column);
+            out.println("VALID_MOVE");
+            sendBoardState(); // Send the updated board state after a valid move
+        } else {
+            out.println("INVALID_MOVE");
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
     }
 }
 
-
-@Override
 public void run() {
     try {
         player1Out.println("START R");
         player2Out.println("START B");
-        
+
         // Send the initial board state to both players
         sendBoardState();
 
@@ -64,16 +69,11 @@ public void run() {
             if (currentPlayer == 'R') {
                 player1Out.println("YOUR_TURN");
                 player2Out.println("OPPONENTS_TURN");
+                handleMove(player1Socket, player1Out);
             } else {
                 player1Out.println("OPPONENTS_TURN");
                 player2Out.println("YOUR_TURN");
-            }
-
-            // Receive and handle moves from the current player
-            if (currentPlayer == 'R') {
-                handleMove(player1In, player1Out);
-            } else {
-                handleMove(player2In, player2Out);
+                handleMove(player2Socket, player2Out);
             }
 
             // Check for game over conditions
@@ -82,7 +82,7 @@ public void run() {
                 sendBoardState();
                 break;
             }
-            
+
             // Switch players
             currentPlayer = (currentPlayer == 'R') ? 'B' : 'R';
         }

@@ -2,8 +2,8 @@
 comment0.target=C4
 comment1.params=player1Socket\ player2Socket
 comment1.target=C4(java.net.Socket,\ java.net.Socket)
-comment2.params=in\ out
-comment2.target=void\ handleMove(java.util.Scanner,\ java.io.PrintWriter)
+comment2.params=socket\ out
+comment2.target=void\ handleMove(java.net.Socket,\ java.io.PrintWriter)
 comment3.params=
 comment3.target=void\ run()
 comment4.params=column
