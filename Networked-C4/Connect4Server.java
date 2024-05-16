@@ -21,14 +21,16 @@ public class Connect4Server {
 
             while (true) {
                 Socket player1Socket = serverSocket.accept();
-                System.out.println("Player 1 connected.");
+                //System.out.println("Player 1 connected.");
                 BufferedReader player1Input = new BufferedReader(new InputStreamReader(player1Socket.getInputStream()));
                 String player1Name = player1Input.readLine();
+                System.out.println(player1Name + " connected.");
 
                 Socket player2Socket = serverSocket.accept();
-                System.out.println("Player 2 connected.");
+                //System.out.println("Player 2 connected.");
                 BufferedReader player2Input = new BufferedReader(new InputStreamReader(player2Socket.getInputStream()));
                 String player2Name = player2Input.readLine();
+                System.out.println(player2Name + " connected.");
 
                 // Start a new game thread
                 C4 game = new C4(player1Socket, player2Socket, player1Name, player2Name, leaderboard);

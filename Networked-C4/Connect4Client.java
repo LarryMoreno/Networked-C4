@@ -29,6 +29,12 @@ public class Connect4Client {
                     String userInput = consoleInput.readLine();
                     out.println(userInput);
                 }
+                
+                if (response.equals("REPLAY?")) {
+                    System.out.println("Would you like to play again Y/N");
+                    String userInput = consoleInput.readLine();
+                    out.println(userInput);
+                }
             }
 
             socket.close();

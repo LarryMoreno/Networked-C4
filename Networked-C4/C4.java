@@ -19,110 +19,169 @@ public class C4 extends Thread {
     private String player1Name;
     private String player2Name;
     public C4(Socket player1Socket, Socket player2Socket, String player1Name, String player2Name, Leaderboard leaderboard) {
-    this.player1Socket = player1Socket;
-    this.player2Socket = player2Socket;
-    this.leaderboard = leaderboard;
-    this.player1Name = player1Name;
-    this.player2Name = player2Name;
-    board = new char[6][7]; // Initialize the game board with 6 rows and 7 columns
-    currentPlayer = 'R'; // Red player starts
-    gameRunning = true;
+        this.player1Socket = player1Socket;
+        this.player2Socket = player2Socket;
+        this.leaderboard = leaderboard;
+        this.player1Name = player1Name;
+        this.player2Name = player2Name;
+        board = new char[6][7]; // Initialize the game board with 6 rows and 7 columns
+        currentPlayer = 'R'; // Red player starts
+        gameRunning = true;
 
-    // Initialize the game board with empty spaces
-    for (int row = 0; row < 6; row++) {
-        for (int col = 0; col < 7; col++) {
-            board[row][col] = ' '; // Set each cell to an empty space
+        // Initialize the game board with empty spaces
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 7; col++) {
+                board[row][col] = ' '; // Set each cell to an empty space
+            }
+        }
+
+        try {
+            player1In = new Scanner(player1Socket.getInputStream());
+            player1Out = new PrintWriter(player1Socket.getOutputStream(), true);
+            player2In = new Scanner(player2Socket.getInputStream());
+            player2Out = new PrintWriter(player2Socket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    try {
-        player1In = new Scanner(player1Socket.getInputStream());
-        player1Out = new PrintWriter(player1Socket.getOutputStream(), true);
-        player2In = new Scanner(player2Socket.getInputStream());
-        player2Out = new PrintWriter(player2Socket.getOutputStream(), true);
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
-private void handleMove(Socket socket, PrintWriter out) {
-    try {
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        int column = Integer.parseInt(in.readLine());
+    private void handleMove(Socket socket, PrintWriter out) {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            int column = Integer.parseInt(in.readLine());
 
-        if (isValidMove(column)) {
-            dropPiece(column);
-            out.println("VALID_MOVE");
-            sendBoardState(); // Send the updated board state after a valid move
-        } else {
-            out.println("INVALID_MOVE");
-        }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
-
-public void run() {
-    try {
-        player1Out.println("START R");
-        player2Out.println("START B");
-
-        // Send the initial board state to both players
-        sendBoardState();
-
-        while (gameRunning) {
-            // Notify the current player that it's their turn
-            if (currentPlayer == 'R') {
-                player1Out.println("YOUR_TURN");
-                player2Out.println("OPPONENTS_TURN");
-                handleMove(player1Socket, player1Out);
+            if (isValidMove(column)) {
+                dropPiece(column);
+                out.println("VALID_MOVE");
+                sendBoardState(); // Send the updated board state after a valid move
             } else {
-                player1Out.println("OPPONENTS_TURN");
-                player2Out.println("YOUR_TURN");
-                handleMove(player2Socket, player2Out);
+                out.println("INVALID_MOVE");
             }
-
-            // Check for game over conditions
-            if (checkForWinner() || checkForDraw()) {
-                gameRunning = false;
-                sendBoardState();
-                break;
-            }
-
-            // Switch players
-            currentPlayer = (currentPlayer == 'R') ? 'B' : 'R';
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    } finally {
-     player1Out.println("GAME_OVER");
-            player2Out.println("GAME_OVER");
+    }
 
-            if (checkForWinner()) {
+    private String playAgain(Socket socket, PrintWriter out) {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String ans = in.readLine();
+
+            if(ans.equalsIgnoreCase("y"))
+            {
+                return "Y";
+            }
+            return "N";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "N";
+
+        }
+    }
+
+    private void resetBoard()
+    {
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 7; col++) {
+                board[row][col] = ' '; // Set each cell to an empty space
+            }
+        }
+    }
+
+    public void run() {
+        try {
+            player1Out.println("START R");
+            player2Out.println("START B");
+
+            // Send the initial board state to both players
+            sendBoardState();
+
+            while (gameRunning) {
+                // Notify the current player that it's their turn
                 if (currentPlayer == 'R') {
-                    leaderboard.recordWin(player1Name);
-                    leaderboard.recordLoss(player2Name);
+                    player1Out.println("YOUR_TURN");
+                    player2Out.println("OPPONENTS_TURN");
+                    handleMove(player1Socket, player1Out);
                 } else {
-                    leaderboard.recordWin(player2Name);
-                    leaderboard.recordLoss(player1Name);
+                    player1Out.println("OPPONENTS_TURN");
+                    player2Out.println("YOUR_TURN");
+                    handleMove(player2Socket, player2Out);
                 }
+
+                // Check for game over conditions
+                if (checkForWinner() || checkForDraw()) {
+                    player1Out.println("REPLAY?");
+                    player2Out.println("REPLAY?");
+                    if(playAgain(player1Socket, player1Out) == "Y" && playAgain(player2Socket, player2Out) == "Y")
+                    {
+                        leaderBoard();
+                        resetBoard();
+                        sendBoardState();
+                    }
+                    else
+                    {
+                        gameRunning = false;
+                        //sendBoardState();
+                        break;
+                    }
+                }
+
+                // Switch players
+                currentPlayer = (currentPlayer == 'R') ? 'B' : 'R';
+            }
+        } finally {
+            //player1Out.println("GAME_OVER");
+            //player2Out.println("GAME_OVER");
+            /*
+            if (checkForWinner()) {
+            if (currentPlayer == 'R') {
+            leaderboard.recordWin(player1Name);
+            leaderboard.recordLoss(player2Name);
+            } else {
+            leaderboard.recordWin(player2Name);
+            leaderboard.recordLoss(player1Name);
+            }
             }
 
             // Send the leaderboard to both players
             String leaderboardData = leaderboard.getLeaderboard();
             player1Out.println(leaderboardData);
-            player2Out.println(leaderboardData);
+            player2Out.println(leaderboardData);*/
+
+            leaderBoard();
+
+            player1Out.println("GAME_OVER");
+            player2Out.println("GAME_OVER");
 
             player1Out.close();
             player2Out.close();
 
-        
-        try {
-            player1Socket.close();
-            player2Socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                player1Socket.close();
+                player2Socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
 
+    private void leaderBoard()
+    {
+        if (checkForWinner()) {
+            if (currentPlayer == 'R') {
+                leaderboard.recordWin(player1Name);
+                leaderboard.recordLoss(player2Name);
+            } else {
+                leaderboard.recordWin(player2Name);
+                leaderboard.recordLoss(player1Name);
+            }
+        }
+
+        // Send the leaderboard to both players
+        String leaderboardData = leaderboard.getLeaderboard();
+        player1Out.println(leaderboardData);
+        player2Out.println(leaderboardData);
+    }
 
     private void dropPiece(int column) {
         for (int row = 5; row >= 0; row--) {
@@ -138,9 +197,9 @@ public void run() {
         for (int row = 0; row < 6; row++) {
             for (int col = 0; col <= 3; col++) {
                 if (board[row][col] == currentPlayer &&
-                    board[row][col + 1] == currentPlayer &&
-                    board[row][col + 2] == currentPlayer &&
-                    board[row][col + 3] == currentPlayer) {
+                board[row][col + 1] == currentPlayer &&
+                board[row][col + 2] == currentPlayer &&
+                board[row][col + 3] == currentPlayer) {
                     return true;
                 }
             }
@@ -150,9 +209,9 @@ public void run() {
         for (int col = 0; col < 7; col++) {
             for (int row = 0; row <= 2; row++) {
                 if (board[row][col] == currentPlayer &&
-                    board[row + 1][col] == currentPlayer &&
-                    board[row + 2][col] == currentPlayer &&
-                    board[row + 3][col] == currentPlayer) {
+                board[row + 1][col] == currentPlayer &&
+                board[row + 2][col] == currentPlayer &&
+                board[row + 3][col] == currentPlayer) {
                     return true;
                 }
             }
@@ -162,9 +221,9 @@ public void run() {
         for (int row = 0; row <= 2; row++) {
             for (int col = 0; col <= 3; col++) {
                 if (board[row][col] == currentPlayer &&
-                    board[row + 1][col + 1] == currentPlayer &&
-                    board[row + 2][col + 2] == currentPlayer &&
-                    board[row + 3][col + 3] == currentPlayer) {
+                board[row + 1][col + 1] == currentPlayer &&
+                board[row + 2][col + 2] == currentPlayer &&
+                board[row + 3][col + 3] == currentPlayer) {
                     return true;
                 }
             }
@@ -172,9 +231,9 @@ public void run() {
         for (int row = 0; row <= 2; row++) {
             for (int col = 3; col < 7; col++) {
                 if (board[row][col] == currentPlayer &&
-                    board[row + 1][col - 1] == currentPlayer &&
-                    board[row + 2][col - 2] == currentPlayer &&
-                    board[row + 3][col - 3] == currentPlayer) {
+                board[row + 1][col - 1] == currentPlayer &&
+                board[row + 2][col - 2] == currentPlayer &&
+                board[row + 3][col - 3] == currentPlayer) {
                     return true;
                 }
             }
@@ -193,39 +252,39 @@ public void run() {
         }
         return true;
     }
-    
-private boolean isValidMove(int column) {
-    // Check if the column is within bounds
-    if (column < 0 || column >= 7) {
-        return false;
-    }
-    
-    // Check if the top row of the column is empty
-    return board[0][column] == ' ';
-}
 
-private void sendBoardState() {
-    // Concatenate the board into a single string
-    StringBuilder boardString = new StringBuilder();
-    boardString.append("| 0   1   2   3   4   5   6  \n");
-    boardString.append("|____________________________\n");
-    for (int row = 0; row < 6; row++) {
-        boardString.append("|");
-        for (int col = 0; col < 7; col++) {
-            boardString.append(" ");
-            if (board[row][col] == '\0') {
-                boardString.append(" - "); // Use '-' for empty cells
-            } else {
-                boardString.append(board[row][col]);
-            }
-            boardString.append(" |");
+    private boolean isValidMove(int column) {
+        // Check if the column is within bounds
+        if (column < 0 || column >= 7) {
+            return false;
         }
-        boardString.append("\n|___|___|___|___|___|___|___|\n");
+
+        // Check if the top row of the column is empty
+        return board[0][column] == ' ';
     }
 
-    // Send the board state to both players
-    player1Out.println(boardString.toString());
-    player2Out.println(boardString.toString());
-}
+    private void sendBoardState() {
+        // Concatenate the board into a single string
+        StringBuilder boardString = new StringBuilder();
+        boardString.append("| 0   1   2   3   4   5   6  \n");
+        boardString.append("|____________________________\n");
+        for (int row = 0; row < 6; row++) {
+            boardString.append("|");
+            for (int col = 0; col < 7; col++) {
+                boardString.append(" ");
+                if (board[row][col] == '\0') {
+                    boardString.append(" - "); // Use '-' for empty cells
+                } else {
+                    boardString.append(board[row][col]);
+                }
+                boardString.append(" |");
+            }
+            boardString.append("\n|___|___|___|___|___|___|___|\n");
+        }
+
+        // Send the board state to both players
+        player1Out.println(boardString.toString());
+        player2Out.println(boardString.toString());
+    }
 }
 
