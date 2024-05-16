@@ -2,4 +2,8 @@
 comment0.target=Connect4Server
 comment1.params=args
 comment1.target=void\ main(java.lang.String[])
-numComments=2
+comment2.params=
+comment2.target=Connect4Server()
+comment3.params=
+comment3.target=void\ start()
+numComments=4

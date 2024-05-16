@@ -15,10 +15,15 @@ public class C4 extends Thread {
     private char[][] board;
     private char currentPlayer;
     private boolean gameRunning;
-
-    public C4(Socket player1Socket, Socket player2Socket) {
+    private Leaderboard leaderboard;
+    private String player1Name;
+    private String player2Name;
+    public C4(Socket player1Socket, Socket player2Socket, String player1Name, String player2Name, Leaderboard leaderboard) {
     this.player1Socket = player1Socket;
     this.player2Socket = player2Socket;
+    this.leaderboard = leaderboard;
+    this.player1Name = player1Name;
+    this.player2Name = player2Name;
     board = new char[6][7]; // Initialize the game board with 6 rows and 7 columns
     currentPlayer = 'R'; // Red player starts
     gameRunning = true;
@@ -87,12 +92,28 @@ public void run() {
             currentPlayer = (currentPlayer == 'R') ? 'B' : 'R';
         }
     } finally {
-        player1Out.println("GAME_OVER");
-        player2Out.println("GAME_OVER");
+     player1Out.println("GAME_OVER");
+            player2Out.println("GAME_OVER");
 
-        player1Out.close();
-        player2Out.close();
+            if (checkForWinner()) {
+                if (currentPlayer == 'R') {
+                    leaderboard.recordWin(player1Name);
+                    leaderboard.recordLoss(player2Name);
+                } else {
+                    leaderboard.recordWin(player2Name);
+                    leaderboard.recordLoss(player1Name);
+                }
+            }
 
+            // Send the leaderboard to both players
+            String leaderboardData = leaderboard.getLeaderboard();
+            player1Out.println(leaderboardData);
+            player2Out.println(leaderboardData);
+
+            player1Out.close();
+            player2Out.close();
+
+        
         try {
             player1Socket.close();
             player2Socket.close();
