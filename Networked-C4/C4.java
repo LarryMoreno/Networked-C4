@@ -75,7 +75,6 @@ public class C4 extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
             return "N";
-
         }
     }
 
@@ -121,7 +120,6 @@ public class C4 extends Thread {
                     else
                     {
                         gameRunning = false;
-                        //sendBoardState();
                         break;
                     }
                 }
@@ -130,24 +128,6 @@ public class C4 extends Thread {
                 currentPlayer = (currentPlayer == 'R') ? 'B' : 'R';
             }
         } finally {
-            //player1Out.println("GAME_OVER");
-            //player2Out.println("GAME_OVER");
-            /*
-            if (checkForWinner()) {
-            if (currentPlayer == 'R') {
-            leaderboard.recordWin(player1Name);
-            leaderboard.recordLoss(player2Name);
-            } else {
-            leaderboard.recordWin(player2Name);
-            leaderboard.recordLoss(player1Name);
-            }
-            }
-
-            // Send the leaderboard to both players
-            String leaderboardData = leaderboard.getLeaderboard();
-            player1Out.println(leaderboardData);
-            player2Out.println(leaderboardData);*/
-
             leaderBoard();
 
             player1Out.println("GAME_OVER");

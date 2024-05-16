@@ -3,7 +3,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.io.*;
 public class Leaderboard implements Serializable {
-    private static final long serialVersionUID = 1L; // Add a serialVersionUID
     private Map<String, PlayerStats> leaderboard;
 
     public Leaderboard() {
@@ -29,8 +28,7 @@ public class Leaderboard implements Serializable {
             sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
         }
         return sb.toString();
-    }
-
+    }    
     public void saveLeaderboard(String filename) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
             oos.writeObject(leaderboard);
@@ -45,29 +43,5 @@ public class Leaderboard implements Serializable {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-    }
-}
-
-class PlayerStats implements Serializable {
-    private static final long serialVersionUID = 1L; // Add a serialVersionUID
-    private int wins;
-    private int losses;
-
-    public PlayerStats() {
-        wins = 0;
-        losses = 0;
-    }
-
-    public void incrementWins() {
-        wins++;
-    }
-
-    public void incrementLosses() {
-        losses++;
-    }
-
-    @Override
-    public String toString() {
-        return "Wins: " + wins + ", Losses: " + losses;
     }
 }
